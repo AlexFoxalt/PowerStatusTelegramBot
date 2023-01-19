@@ -1,0 +1,14 @@
+.ve
+.idea
+.DS_Store
+__pycache__
+logs
+.env
+.env.*
+!.env.example
+*.db
+db.sqlite3
+main/static
+!.gitkeep
+.coverage
+.coverage.*
