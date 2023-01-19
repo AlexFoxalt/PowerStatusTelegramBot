@@ -40,3 +40,11 @@ class Light(Base):
     value = Column(Boolean)
     mins_from_prev = Column(SmallInteger)
     time_created = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class PinnedMessage(Base):
+    __tablename__ = "pinned"
+    __mapper_args__ = {"eager_defaults": True}
+    id = Column(Integer, primary_key=True)
+    text = Column(String, default="Default message", nullable=False)
+    time_created = Column(DateTime(timezone=True), server_default=func.now())
