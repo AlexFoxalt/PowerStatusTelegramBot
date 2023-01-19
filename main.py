@@ -358,6 +358,6 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("migrate", migrate))
     app.add_handler(CommandHandler("msg", msg))
     job_status_update = job_queue.run_repeating(
-        run_status_update, interval=60, first=10
+        run_status_update, interval=60, first=60
     )
     app.run_polling()
