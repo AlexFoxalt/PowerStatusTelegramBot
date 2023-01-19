@@ -99,7 +99,7 @@ async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text_status = "Свет есть 🟢"
         text_time = "Время включения"
     else:
-        text_status = "Света есть 🔴"
+        text_status = "Света нет 🔴"
         text_time = "Время отключения"
 
     await context.bot.send_message(
