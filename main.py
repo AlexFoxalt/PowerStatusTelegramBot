@@ -49,7 +49,8 @@ async def msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=target_id,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=message + "\n\n<i>*на это сообщение отвечать не нужно, оно нигде не сохранится</i>",
+        text=message
+        + "\n\n<i>*на это сообщение отвечать не нужно, оно нигде не сохранится</i>",
     )
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -349,6 +350,6 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("migrate", migrate))
     app.add_handler(CommandHandler("msg", msg))
     job_status_update = job_queue.run_repeating(
-        run_status_update, interval=60, first=60
+        run_status_update, interval=60, first=10
     )
     app.run_polling()

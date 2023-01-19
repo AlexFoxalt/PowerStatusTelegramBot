@@ -5,7 +5,9 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
 
-RUN apt-get update -y && apt-get install -y iputils-ping
+RUN apt-get update -y &&  \
+    apt-get install -y apt-transport-https && \
+    apt-get install -y telnet
 
 ADD requirements.txt /app/requirements.txt
 

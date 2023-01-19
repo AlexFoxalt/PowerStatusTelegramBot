@@ -1,16 +1,19 @@
-import platform
 import subprocess
 
 
-def ping(host: str, silent: bool = True) -> bool:
+def ping(host: str, port: int = 8080) -> bool:
     """
-
-    :param host: Host name. For ex: 192.168.1.1
-    :param silent: No output to console mode
+    Ping server with telnet
+    :param host: Host name
+    :param port: Port num
     :return: Returns True if host (str) responds to a ping request
     """
-    param = "-n" if platform.system().lower() == "windows" else "-c"
-    command = ["ping", param, "1", host]
-    if silent:
-        return subprocess.call(command, stdout=subprocess.DEVNULL, shell=True) == 0
-    return subprocess.call(command, shell=True) == 0
+    command = f"echo -e \x1dclose\x0d | telnet {host} {port}"
+    try:
+        subprocess.check_output(
+            command, stderr=subprocess.DEVNULL, timeout=10, shell=True
+        )
+    except subprocess.CalledProcessError:
+        return False
+    else:
+        return True
