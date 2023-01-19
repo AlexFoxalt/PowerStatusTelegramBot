@@ -96,11 +96,11 @@ async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     light.time_created = convert_tz(light.time_created)
 
     if light.value:
-        text_status = "Света нет 🔴"
-        text_time = "Время отключения"
-    else:
         text_status = "Свет есть 🟢"
         text_time = "Время включения"
+    else:
+        text_status = "Света есть 🔴"
+        text_time = "Время отключения"
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
