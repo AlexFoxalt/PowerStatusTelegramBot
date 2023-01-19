@@ -40,6 +40,11 @@ async def migrate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     async with DB.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        parse_mode=telegram.constants.ParseMode.HTML,
+        text=f"Successfully migrated to fresh DB",
+    )
     await DB.dispose()
 
 

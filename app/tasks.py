@@ -13,7 +13,7 @@ def ping(host: str, port: int = 8080) -> bool:
         subprocess.check_output(
             command, stderr=subprocess.DEVNULL, timeout=10, shell=True
         )
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return False
     else:
         return True
