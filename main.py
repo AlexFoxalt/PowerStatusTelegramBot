@@ -290,6 +290,14 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
         # If no changes were noticed, just pass
         return
 
+    if PREV_LIGHT_VALUE is None:
+        async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+        async with async_session() as session:
+            first_light = Light(value=status, mins_from_prev=0)
+            session.add(first_light)
+            await session.commit()
+            return
+
     async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
     async with async_session() as session:
         db_q = select(Light.time_created).order_by(Light.time_created.desc())
