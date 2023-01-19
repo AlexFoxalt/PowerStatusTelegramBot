@@ -32,6 +32,7 @@ from db.models import User, Base, Light, Message
 from db.utils import is_registered, get_subscribed_users, get_last_light_value
 
 SELECTED_FLAT, SUPPORT_MSG, SELECTED_HOME, SELECTED_NONE = range(4)
+PREV_LIGHT_VALUE = None
 
 
 @admin_only
@@ -60,8 +61,8 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton(f"💡 Свет 💡", callback_data="light_info")],
         [InlineKeyboardButton(f"📊 Статистика 📊", callback_data="stat_info")],
-        [InlineKeyboardButton(f"📬 Уведомления 📬", callback_data="sub_info")],
-        [InlineKeyboardButton(f"⚙️ Обратная связь ⚙️", callback_data="support_info")],
+        [InlineKeyboardButton(f"📳 Уведомления 📳", callback_data="sub_info")],
+        [InlineKeyboardButton(f"💬 Обратная связь 💬", callback_data="support_info")],
         [InlineKeyboardButton("ℹ️ О Боте ℹ️", callback_data="bot_info")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -278,9 +279,13 @@ async def register_end(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
-    prev_value = await get_last_light_value()
+    global PREV_LIGHT_VALUE
+
+    if PREV_LIGHT_VALUE is None:
+        PREV_LIGHT_VALUE = await get_last_light_value()
+
     status = ping(Cfg.ROUTER_IP)
-    if prev_value == status:
+    if PREV_LIGHT_VALUE == status:
         # If no changes were noticed, just pass
         return
 
@@ -295,9 +300,10 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
         session.add(Light(value=status, mins_from_prev=mins_from_prev))
         await session.commit()
         logger.info(
-            f"Created new object of Light. Switch {prev_value} -> {status}. Hours passed {mins_from_prev}h."
+            f"Created new object of Light. Switch {PREV_LIGHT_VALUE} -> {status}. Hours passed {mins_from_prev}h."
         )
 
+    PREV_LIGHT_VALUE = status
     subscribed_users = await get_subscribed_users()
 
     if status:
@@ -343,6 +349,6 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("migrate", migrate))
     app.add_handler(CommandHandler("msg", msg))
     job_status_update = job_queue.run_repeating(
-        run_status_update, interval=60, first=10
+        run_status_update, interval=60, first=60
     )
     app.run_polling()
