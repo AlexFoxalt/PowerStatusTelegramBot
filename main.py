@@ -22,7 +22,7 @@ from telegram.ext import (
 )
 
 from app.decorators import admin_only
-from app.logger import logger
+from app.logger import get_logger
 from app.tasks import ping
 from app.utils import format_time, convert_tz
 from config.base import Config as Cfg
@@ -35,6 +35,7 @@ from db.utils import is_registered, get_subscribed_users, get_last_light_value
 SELECTED_FLAT, SUPPORT_MSG, SELECTED_HOME, SELECTED_NONE = range(4)
 PREV_LIGHT_VALUE = None
 PINNED_MSG = None
+logger = get_logger(__name__)
 
 
 @admin_only
@@ -65,10 +66,10 @@ async def msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @admin_only
-async def pin_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def msgpin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global PINNED_MSG
 
-    updated_msg = re.findall(r"/pin_msg (.*)", update.message.text)[0]
+    updated_msg = re.findall(r"/msgpin (.*)", update.message.text)[0]
     async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
 
     async with async_session() as session:
@@ -81,6 +82,26 @@ async def pin_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text=f"Successfully pinned new message:\n\n{updated_msg}",
     )
     return await menu(update, context)
+
+
+@admin_only
+async def msgall(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = re.findall(r"/msgall (.*)", update.message.text)[0]
+    async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+    async with async_session() as session:
+        db_q = select(User.tg_id)
+        result = await session.execute(db_q)
+        users = result.scalars().all()
+        for user_id in users:
+            await context.bot.send_message(
+                chat_id=user_id,
+                parse_mode=telegram.constants.ParseMode.HTML,
+                text=f"{tmpText.TMP_ADMIN_MSG_PREFIX}\n\n{message}\n\n{tmpText.TMP_NO_REPLY_ALL_POSTFIX}",
+            )
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=f"Successfully sent messages to {len(users)} users",
+    )
 
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -209,7 +230,6 @@ async def bot_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=telegram.constants.ParseMode.HTML,
         text=tmpText.TMP_BOT_INFO,
     )
-    return await menu(update, context)
 
 
 async def support_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -224,7 +244,8 @@ async def support_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    return await menu(update, context)
+    await menu(update, context)
+    return ConversationHandler.END
 
 
 async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -257,7 +278,8 @@ async def register_support_message(update: Update, context: ContextTypes.DEFAULT
         f"From: {user}\n"
         f"Msg: {text}",
     )
-    return await menu(update, context)
+    await menu(update, context)
+    return ConversationHandler.END
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -376,12 +398,12 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
     if status:
         text = (
             f"{tmpText.TMP_LIGHT_NOTIFICATION_ON}\n\n"
-            f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_ON}: {hours_part}ч.{mins_from_prev}мин."
+            f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_ON}: {hours_part}ч.{mins_part}мин."
         )
     else:
         text = (
             f"{tmpText.TMP_LIGHT_NOTIFICATION_OFF}\n\n"
-            f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_OFF}: {hours_part}ч.{mins_from_prev}мин.\n\n"
+            f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_OFF}: {hours_part}ч.{mins_part}мин.\n\n"
         )
 
     for user_tg_id in subscribed_users:
@@ -424,8 +446,10 @@ if __name__ == "__main__":
 
     app.add_handler(CommandHandler("migrate", migrate))
     app.add_handler(CommandHandler("msg", msg))
-    app.add_handler(CommandHandler("pin_msg", pin_msg))
+    app.add_handler(CommandHandler("msgpin", msgpin))
+    app.add_handler(CommandHandler("msgall", msgall))
     job_status_update = job_queue.run_repeating(
         run_status_update, interval=60, first=60
     )
+    logger.info("Bot starting")
     app.run_polling()

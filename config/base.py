@@ -12,7 +12,11 @@ class Config:
     POSTGRES_PORT = os.getenv("POSTGRES_PORT")
     POSTGRES_USER = os.getenv("POSTGRES_USER")
     POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-    POSTGRES_DSN = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+    POSTGRES_DSN = (
+        f"postgresql+asyncpg://"
+        f"{POSTGRES_USER}:{POSTGRES_PASSWORD}@"
+        f"{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+    )
     ADMIN_ID = int(os.getenv("ADMIN_ID"))
     TICKS_BETWEEN_PINGS = 60
 
