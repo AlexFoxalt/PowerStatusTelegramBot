@@ -93,7 +93,7 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
             result = await session.execute(db_q)
             pinned_msg = result.scalars().first()
             if pinned_msg:
-                PINNED_MSG = pinned_msg
+                PINNED_MSG = pinned_msg.text
             else:
                 PINNED_MSG = Cfg.DEFAULT_PINNED_MSG
 
