@@ -389,7 +389,7 @@ async def register_support_message(update: Update, context: ContextTypes.DEFAULT
     await context.bot.send_message(
         chat_id=Cfg.ADMIN_ID,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=f"‼️<b>New message to support detected</b>‼️\n"
+        text=f"‼️<b>New message to support</b>‼\n"
         f"From: {user}\n"
         f"Msg: {text}",
     )
@@ -459,7 +459,7 @@ async def register_end(update: Update, context: ContextTypes.DEFAULT_TYPE):
             User(
                 tg_id=user.id,
                 username=user.username,
-                home=context.user_data.get("home", None),
+                home=context.user_data.get("home"),
                 flat=flat,
             )
         )
@@ -469,6 +469,15 @@ async def register_end(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=tmpText.TMP_REGISTER_SUCCESS,
+        reply_markup=ReplyKeyboardRemove(),
+    )
+    await context.bot.send_message(
+        chat_id=Cfg.ADMIN_ID,
+        text=f"✳ <b>New registration</b>\n\n"
+             f"ID: {user.id}\n"
+             f"Username: {user.username}\n"
+             f'Home: {context.user_data.get("home")}\n'
+             f'Flat: {flat}',
         reply_markup=ReplyKeyboardRemove(),
     )
     return await start(update, context)
