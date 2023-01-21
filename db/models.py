@@ -13,7 +13,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     tg_id = Column(Integer, unique=True)
-    username = Column(String, unique=True)
+    username = Column(String, nullable=True)
     home = Column(String, nullable=True)
     flat = Column(Integer, nullable=True)
     news_subscribed = Column(Boolean, default=False)

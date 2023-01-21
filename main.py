@@ -1,5 +1,6 @@
-from datetime import datetime
 import re
+from datetime import datetime, timedelta
+
 import telegram
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -21,16 +22,27 @@ from telegram.ext import (
     ConversationHandler,
 )
 
+import config.buttons as btnText
+import config.templates as tmpText
 from app.decorators import admin_only
 from app.logger import get_logger
 from app.tasks import ping
-from app.utils import format_time, convert_tz
+from app.utils import (
+    format_time,
+    convert_tz,
+    get_hours_and_mins,
+    get_date_and_month,
+    get_percent_of_two,
+)
 from config.base import Config as Cfg
-import config.buttons as btnText
-import config.templates as tmpText
 from db.base import DB
 from db.models import User, Base, Light, Message, PinnedMessage
-from db.utils import is_registered, get_subscribed_users, get_last_light_value
+from db.utils import (
+    is_registered,
+    get_subscribed_users,
+    get_last_light_value,
+    get_light_stat,
+)
 
 SELECTED_FLAT, SUPPORT_MSG, SELECTED_HOME, SELECTED_NONE = range(4)
 PREV_LIGHT_VALUE = None
@@ -71,7 +83,6 @@ async def msgpin(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     updated_msg = re.findall(r"/msgpin (.*)", update.message.text)[0]
     async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
-
     async with async_session() as session:
         session.add(PinnedMessage(text=updated_msg))
         await session.commit()
@@ -122,8 +133,8 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton(btnText.BTN_MENU_LIGHT, callback_data="light_info")],
         [InlineKeyboardButton(btnText.BTN_MENU_STAT, callback_data="stat_info")],
         [InlineKeyboardButton(btnText.BTN_MENU_SUB, callback_data="sub_info")],
-        [InlineKeyboardButton(btnText.BTN_MENU_SUPPORT, callback_data="support_info")],
-        [InlineKeyboardButton(btnText.BTN_MENU_INFO, callback_data="bot_info")],
+        [InlineKeyboardButton(btnText.BTN_MENU_DTEK, callback_data="dtek_info")],
+        [InlineKeyboardButton(btnText.BTN_MENU_SUPPORT, callback_data="support_info"),InlineKeyboardButton(btnText.BTN_MENU_INFO, callback_data="bot_info")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await context.bot.send_message(
@@ -148,23 +159,24 @@ async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         result = await session.execute(db_q)
         light = result.scalars().first()
 
+    time_passed = (
+        datetime.utcnow() - light.time_created.replace(tzinfo=None)
+    ).seconds // 60
+    time_passed = get_hours_and_mins(time_passed)
     light.time_created = convert_tz(light.time_created)
 
     if light.value:
-        text_status = tmpText.TMP_LIGHT_ON
-        text_time = tmpText.TMP_LIGHT_TIME_ON
-        text_emoji = tmpText.TMP_LIGHT_INFO_EMOJI_ON
+        text = tmpText.TMP_LIGHT_ON
     else:
-        text_status = tmpText.TMP_LIGHT_OFF
-        text_time = tmpText.TMP_LIGHT_TIME_OFF
-        text_emoji = tmpText.TMP_LIGHT_INFO_EMOJI_OFF
+        text = tmpText.TMP_LIGHT_OFF
 
+    text = text.format(
+        time_of_event=format_time(light.time_created), time_passed=time_passed
+    )
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=f"{text_emoji} {tmpText.TMP_LIGHT_INFO} {text_emoji}\n\n"
-        f"📃 Статус: {text_status}\n"
-        f"📆 {text_time}: {format_time(light.time_created)}",
+        text=text,
     )
 
 
@@ -224,11 +236,11 @@ async def unsub_me(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             )
 
 
-async def bot_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(
+async def dtek_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_photo(
         chat_id=update.effective_chat.id,
-        parse_mode=telegram.constants.ParseMode.HTML,
-        text=tmpText.TMP_BOT_INFO,
+        photo=Cfg.get_dtek_media(),
+        caption=tmpText.TMP_DTEK_INFO,
     )
 
 
@@ -243,6 +255,14 @@ async def support_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return SUPPORT_MSG
 
 
+async def bot_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        parse_mode=telegram.constants.ParseMode.HTML,
+        text=tmpText.TMP_BOT_INFO,
+    )
+
+
 async def back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await menu(update, context)
     return ConversationHandler.END
@@ -252,7 +272,83 @@ async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text="В разработке",
+        text=tmpText.TMP_STAT_INFO_MAIN,
+    )
+
+    now = datetime.utcnow().date()
+    week_ago = now - timedelta(days=7)
+    week_stat = await get_light_stat(week_ago, now)
+    text = tmpText.TMP_STAT_INFO_LAST_WEEK.format(
+        stat_date_week_ago=get_date_and_month(week_ago),
+        stat_date_now=get_date_and_month(now),
+        light_off_time=get_hours_and_mins(week_stat["light_off_mins"]),
+        light_on_time=get_hours_and_mins(week_stat["light_on_mins"]),
+        light_turn_on_avg_data=get_hours_and_mins(week_stat["light_turn_on_avg_data"]),
+    )
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        parse_mode=telegram.constants.ParseMode.HTML,
+        text=text,
+    )
+
+    now = now - timedelta(days=1)
+    week_ago = now - timedelta(days=7)
+    two_weeks_ago = now - timedelta(days=14)
+    two_weeks_stat = await get_light_stat(two_weeks_ago, week_ago)
+    text = tmpText.TMP_STAT_INFO_LAST_TWO_WEEKS.format(
+        stat_date_week_ago=get_date_and_month(two_weeks_ago),
+        stat_date_now=get_date_and_month(week_ago),
+        light_off_time=get_hours_and_mins(two_weeks_stat["light_off_mins"]),
+        light_on_time=get_hours_and_mins(two_weeks_stat["light_on_mins"]),
+        light_turn_on_avg_data=get_hours_and_mins(
+            two_weeks_stat["light_turn_on_avg_data"]
+        ),
+    )
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        parse_mode=telegram.constants.ParseMode.HTML,
+        text=text,
+    )
+
+    compare_light_on_data = get_percent_of_two(
+        week_stat["light_on_mins"], two_weeks_stat["light_on_mins"]
+    )
+    compare_light_on_avg_time = get_percent_of_two(
+        week_stat["light_turn_on_avg_data"], two_weeks_stat["light_turn_on_avg_data"]
+    )
+
+    if compare_light_on_data < 0:
+        less_or_more = "меньше"
+        emoji = btnText.BTN_STAT_LESS
+    elif compare_light_on_data > 0:
+        less_or_more = "больше"
+        emoji = btnText.BTN_STAT_MORE
+    else:
+        # Division zero
+        return
+
+    if compare_light_on_avg_time < 0:
+        less_or_more_avg = "меньше"
+        emoji_avg = btnText.BTN_STAT_LESS
+    elif compare_light_on_avg_time > 0:
+        less_or_more_avg = "больше"
+        emoji_avg = btnText.BTN_STAT_MORE
+    else:
+        less_or_more_avg = "не менялось"
+        emoji_avg = btnText.BTN_STAT_EQUAL
+
+    text = tmpText.TMP_STAT_INFO_COMPARE.format(
+        light_on_time=compare_light_on_data,
+        emoji=emoji,
+        less_or_more=less_or_more,
+        light_on_time_avg=compare_light_on_avg_time,
+        emoji_avg=emoji_avg,
+        less_or_more_avg=less_or_more_avg
+    )
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        parse_mode=telegram.constants.ParseMode.HTML,
+        text=text,
     )
 
 
@@ -388,30 +484,31 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
         session.add(Light(value=status, mins_from_prev=mins_from_prev))
         await session.commit()
         logger.info(
-            f"Created new object of Light. Switch {PREV_LIGHT_VALUE} -> {status}. Minutes passed {mins_from_prev}h."
+            f"Created new object of Light. Switch {PREV_LIGHT_VALUE} -> {status}. Minutes passed {mins_from_prev}mins."
         )
 
     PREV_LIGHT_VALUE = status
-    subscribed_users = await get_subscribed_users()
 
-    hours_part, mins_part = mins_from_prev // 60, mins_from_prev % 60
+    formatted_time = get_hours_and_mins(mins_from_prev)
     if status:
         text = (
             f"{tmpText.TMP_LIGHT_NOTIFICATION_ON}\n\n"
-            f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_ON}: {hours_part}ч.{mins_part}мин."
+            f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_ON}: {formatted_time}"
         )
     else:
         text = (
             f"{tmpText.TMP_LIGHT_NOTIFICATION_OFF}\n\n"
-            f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_OFF}: {hours_part}ч.{mins_part}мин.\n\n"
+            f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_OFF}: {formatted_time}"
         )
 
-    for user_tg_id in subscribed_users:
-        await context.bot.send_message(
-            chat_id=user_tg_id,
-            text=text + tmpText.TMP_NOTIFICATION_REASON,
-            parse_mode=telegram.constants.ParseMode.HTML,
-        )
+    subscribed_users = await get_subscribed_users()
+    if subscribed_users:
+        for user_tg_id in subscribed_users:
+            await context.bot.send_message(
+                chat_id=user_tg_id,
+                text=text + tmpText.TMP_NOTIFICATION_REASON,
+                parse_mode=telegram.constants.ParseMode.HTML,
+            )
 
 
 if __name__ == "__main__":

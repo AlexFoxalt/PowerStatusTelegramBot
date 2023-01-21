@@ -1,9 +1,16 @@
-from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine
+import datetime
+
+from cache import AsyncTTL
+from sqlalchemy import and_, func, cast, Date
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import sessionmaker
 
-from db.models import User, Light
+from app.logger import get_logger
 from db.base import DB
+from db.models import User, Light
+
+logger = get_logger(__name__)
 
 
 async def is_registered(tg_id: int) -> bool:
@@ -29,3 +36,46 @@ async def get_last_light_value() -> bool:
         db_q = select(Light.value).order_by(Light.time_created.desc())
         result = await session.execute(db_q)
         return result.scalars().first()
+
+
+@AsyncTTL(time_to_live=60 * 60, maxsize=4)  # ttl = 1 hour
+async def get_light_stat(start: datetime, stop: datetime) -> dict:
+    async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+    async with async_session() as session:
+        db_q = select(func.sum(Light.mins_from_prev)).filter(
+            and_(
+                Light.time_created >= start,
+                cast(Light.time_created, Date) <= stop,
+                Light.value == True,
+            )
+        )
+        result = await session.execute(db_q)
+        light_turn_on_data = result.scalars().first()
+
+        db_q = select(func.sum(Light.mins_from_prev)).filter(
+            and_(
+                Light.time_created >= start,
+                cast(Light.time_created, Date) <= stop,
+                Light.value == False,
+            )
+        )
+        result = await session.execute(db_q)
+        light_turn_off_data = result.scalars().first()
+
+        db_q = select(func.avg(Light.mins_from_prev)).filter(
+            and_(
+                Light.time_created >= start,
+                cast(Light.time_created, Date) <= stop,
+                Light.value == True,
+            )
+        )
+        result = await session.execute(db_q)
+        light_turn_on_avg_data = round(result.scalars().first())
+
+    return {
+        "light_on_mins": light_turn_on_data if light_turn_on_data is not None else 0,
+        "light_off_mins": light_turn_off_data if light_turn_on_data is not None else 0,
+        "light_turn_on_avg_data": light_turn_on_avg_data
+        if light_turn_on_avg_data is not None
+        else 0,
+    }
