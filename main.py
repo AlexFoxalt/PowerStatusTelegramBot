@@ -152,7 +152,8 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     possibles = globals().copy()
     possibles.update(locals())
-    return await possibles.get(query.data)(update, context)
+    await possibles.get(query.data)(update, context)
+    return ConversationHandler.END
 
 
 async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
