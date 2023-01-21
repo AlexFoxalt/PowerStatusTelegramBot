@@ -46,7 +46,7 @@ async def get_light_stat(start: datetime, stop: datetime) -> dict:
             and_(
                 Light.time_created >= start,
                 cast(Light.time_created, Date) <= stop,
-                Light.value == True,
+                Light.value == False,
             )
         )
         result = await session.execute(db_q)
@@ -56,7 +56,7 @@ async def get_light_stat(start: datetime, stop: datetime) -> dict:
             and_(
                 Light.time_created >= start,
                 cast(Light.time_created, Date) <= stop,
-                Light.value == False,
+                Light.value == True,
             )
         )
         result = await session.execute(db_q)
@@ -66,7 +66,7 @@ async def get_light_stat(start: datetime, stop: datetime) -> dict:
             and_(
                 Light.time_created >= start,
                 cast(Light.time_created, Date) <= stop,
-                Light.value == True,
+                Light.value == False,
             )
         )
         result = await session.execute(db_q)
