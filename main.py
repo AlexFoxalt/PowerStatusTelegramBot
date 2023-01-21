@@ -250,7 +250,7 @@ async def dtek_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def support_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[InlineKeyboardButton(f"Назад", callback_data="back_to_menu")]]
+    keyboard = [[InlineKeyboardButton(f"🔙 Назад", callback_data="back_to_menu")]]
     await context.bot.send_message(
         reply_markup=InlineKeyboardMarkup(keyboard),
         chat_id=update.effective_chat.id,
