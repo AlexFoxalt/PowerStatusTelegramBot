@@ -133,11 +133,9 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton(btnText.BTN_MENU_LIGHT, callback_data="light_info")],
         [InlineKeyboardButton(btnText.BTN_MENU_STAT, callback_data="stat_info")],
         [InlineKeyboardButton(btnText.BTN_MENU_SUB, callback_data="sub_info")],
-        [InlineKeyboardButton(btnText.BTN_MENU_DTEK, callback_data="dtek_info")],
+        [InlineKeyboardButton(btnText.BTN_MENU_SUPPORT, callback_data="support_info")],
         [
-            InlineKeyboardButton(
-                btnText.BTN_MENU_SUPPORT, callback_data="support_info"
-            ),
+            InlineKeyboardButton(btnText.BTN_MENU_DTEK, callback_data="dtek_info"),
             InlineKeyboardButton(btnText.BTN_MENU_INFO, callback_data="bot_info"),
         ],
     ]
@@ -389,9 +387,7 @@ async def register_support_message(update: Update, context: ContextTypes.DEFAULT
     await context.bot.send_message(
         chat_id=Cfg.ADMIN_ID,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=f"‼️<b>New message to support</b>‼\n"
-        f"From: {user}\n"
-        f"Msg: {text}",
+        text=f"‼️<b>New message to support</b>‼\n" f"From: {user}\n" f"Msg: {text}",
     )
     await menu(update, context)
     return ConversationHandler.END
@@ -474,12 +470,12 @@ async def register_end(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=Cfg.ADMIN_ID,
         text=f"✳ <b>New registration</b>\n\n"
-             f"ID: {user.id}\n"
-             f"Username: {user.username}\n"
-             f'Home: {context.user_data.get("home")}\n'
-             f'Flat: {flat}',
+        f"ID: {user.id}\n"
+        f"Username: {user.username}\n"
+        f'Home: {context.user_data.get("home")}\n'
+        f"Flat: {flat}",
         reply_markup=ReplyKeyboardRemove(),
-        parse_mode=telegram.constants.ParseMode.HTML
+        parse_mode=telegram.constants.ParseMode.HTML,
     )
     return await start(update, context)
 
