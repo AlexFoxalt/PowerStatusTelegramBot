@@ -559,7 +559,7 @@ if __name__ == "__main__":
                 SELECTED_NONE: [MessageHandler(filters.ALL, register_step_one)],
                 SELECTED_HOME: [
                     MessageHandler(
-                        filters.Regex(r"^(Б|В|Г|Пропустить)$"), register_step_two
+                        filters.Regex(r"^(8Б|8В|8Г|Пропустить)$"), register_step_two
                     )
                 ],
                 SELECTED_FLAT: [
