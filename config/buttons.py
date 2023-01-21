@@ -1,4 +1,4 @@
-BTN_MENU_LIGHT = "💡 Свет 💡"
+BTN_MENU_LIGHT = "💡 Электричество 💡"
 BTN_MENU_STAT = "📊 Статистика 📊"
 BTN_MENU_SUB = "📳 Уведомления 📳"
 BTN_MENU_DTEK = "〽️ ДТЭК 〽️"
