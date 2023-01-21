@@ -479,6 +479,7 @@ async def register_end(update: Update, context: ContextTypes.DEFAULT_TYPE):
              f'Home: {context.user_data.get("home")}\n'
              f'Flat: {flat}',
         reply_markup=ReplyKeyboardRemove(),
+        parse_mode=telegram.constants.ParseMode.HTML
     )
     return await start(update, context)
 
