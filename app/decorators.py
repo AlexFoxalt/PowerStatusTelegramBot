@@ -7,9 +7,7 @@ def admin_only(func):
     @wraps(func)
     async def wrapped(update, context, *args, **kwargs):
         if update.effective_user.id != Cfg.ADMIN_ID:
-            logger.info(
-                f"Unauthorized access denied for {update.effective_user.id}."
-            )
+            logger.info(f"Unauthorized access denied for {update.effective_user.id}.")
             return
         return await func(update, context, *args, **kwargs)
 

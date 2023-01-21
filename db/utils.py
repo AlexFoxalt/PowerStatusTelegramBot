@@ -70,7 +70,7 @@ async def get_light_stat(start: datetime, stop: datetime) -> dict:
             )
         )
         result = await session.execute(db_q)
-        light_turn_on_avg_data = round(result.scalars().first())
+        light_turn_on_avg_data = result.scalars().first()
 
     return {
         "light_on_mins": light_turn_on_data if light_turn_on_data is not None else 0,

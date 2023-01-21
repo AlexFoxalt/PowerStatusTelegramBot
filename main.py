@@ -134,7 +134,12 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton(btnText.BTN_MENU_STAT, callback_data="stat_info")],
         [InlineKeyboardButton(btnText.BTN_MENU_SUB, callback_data="sub_info")],
         [InlineKeyboardButton(btnText.BTN_MENU_DTEK, callback_data="dtek_info")],
-        [InlineKeyboardButton(btnText.BTN_MENU_SUPPORT, callback_data="support_info"),InlineKeyboardButton(btnText.BTN_MENU_INFO, callback_data="bot_info")],
+        [
+            InlineKeyboardButton(
+                btnText.BTN_MENU_SUPPORT, callback_data="support_info"
+            ),
+            InlineKeyboardButton(btnText.BTN_MENU_INFO, callback_data="bot_info"),
+        ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await context.bot.send_message(
@@ -283,7 +288,9 @@ async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         stat_date_now=get_date_and_month(now),
         light_off_time=get_hours_and_mins(week_stat["light_off_mins"]),
         light_on_time=get_hours_and_mins(week_stat["light_on_mins"]),
-        light_turn_on_avg_data=get_hours_and_mins(week_stat["light_turn_on_avg_data"]),
+        light_turn_on_avg_data=get_hours_and_mins(
+            round(week_stat["light_turn_on_avg_data"])
+        ),
     )
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -295,13 +302,25 @@ async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     week_ago = now - timedelta(days=7)
     two_weeks_ago = now - timedelta(days=14)
     two_weeks_stat = await get_light_stat(two_weeks_ago, week_ago)
+
+    if not all(two_weeks_stat.values()):
+        # Not enough data
+        return await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            parse_mode=telegram.constants.ParseMode.HTML,
+            text=tmpText.TMP_STAT_INFO_NO_DATA.format(
+                stat_date_week_ago=get_date_and_month(two_weeks_ago),
+                stat_date_now=get_date_and_month(week_ago),
+            ),
+        )
+
     text = tmpText.TMP_STAT_INFO_LAST_TWO_WEEKS.format(
         stat_date_week_ago=get_date_and_month(two_weeks_ago),
         stat_date_now=get_date_and_month(week_ago),
         light_off_time=get_hours_and_mins(two_weeks_stat["light_off_mins"]),
         light_on_time=get_hours_and_mins(two_weeks_stat["light_on_mins"]),
         light_turn_on_avg_data=get_hours_and_mins(
-            two_weeks_stat["light_turn_on_avg_data"]
+            round(two_weeks_stat["light_turn_on_avg_data"])
         ),
     )
     await context.bot.send_message(
@@ -343,7 +362,7 @@ async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         less_or_more=less_or_more,
         light_on_time_avg=compare_light_on_avg_time,
         emoji_avg=emoji_avg,
-        less_or_more_avg=less_or_more_avg
+        less_or_more_avg=less_or_more_avg,
     )
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
