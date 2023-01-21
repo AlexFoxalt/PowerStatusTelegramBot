@@ -206,6 +206,7 @@ async def sub_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id=update.effective_chat.id,
         text=f"{user_status_mapping[user_sub_status]}",
         reply_markup=reply_markup,
+        parse_mode=telegram.constants.ParseMode.HTML,
     )
 
 
