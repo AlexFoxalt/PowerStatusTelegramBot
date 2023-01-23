@@ -152,8 +152,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     possibles = globals().copy()
     possibles.update(locals())
-    await possibles.get(query.data)(update, context)
-    return ConversationHandler.END
+    return await possibles.get(query.data)(update, context)
 
 
 async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -182,6 +181,7 @@ async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=telegram.constants.ParseMode.HTML,
         text=text,
     )
+    return ConversationHandler.END
 
 
 async def sub_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -209,9 +209,10 @@ async def sub_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=reply_markup,
         parse_mode=telegram.constants.ParseMode.HTML,
     )
+    return ConversationHandler.END
 
 
-async def sub_me(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def sub_me(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
     async with async_session() as session:
@@ -224,9 +225,10 @@ async def sub_me(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await context.bot.send_message(
                 chat_id=update.effective_chat.id, text=tmpText.TMP_SUB_SUCCESS
             )
+    return ConversationHandler.END
 
 
-async def unsub_me(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def unsub_me(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
     async with async_session() as session:
@@ -239,6 +241,7 @@ async def unsub_me(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await context.bot.send_message(
                 chat_id=update.effective_chat.id, text=tmpText.TMP_UNSUB_SUCCESS
             )
+    return ConversationHandler.END
 
 
 async def dtek_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -247,6 +250,7 @@ async def dtek_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         photo=Cfg.get_dtek_media(),
         caption=tmpText.TMP_DTEK_INFO,
     )
+    return ConversationHandler.END
 
 
 async def support_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -266,6 +270,7 @@ async def bot_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=telegram.constants.ParseMode.HTML,
         text=tmpText.TMP_BOT_INFO,
     )
+    return ConversationHandler.END
 
 
 async def back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
