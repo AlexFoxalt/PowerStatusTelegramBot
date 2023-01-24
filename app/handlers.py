@@ -527,26 +527,24 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
         ).seconds // 60
         session.add(Light(value=status, mins_from_prev=mins_from_prev))
         await session.commit()
-        logger.info(
-            f"Created new object of Light. Switch {PREV_LIGHT_VALUE} -> {status}. Minutes passed {mins_from_prev}mins."
-        )
 
     PREV_LIGHT_VALUE = status
 
     formatted_time = get_hours_and_mins(mins_from_prev)
-    if status:
-        text = (
-            f"{tmpText.TMP_LIGHT_NOTIFICATION_ON}\n\n"
-            f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_ON}: {formatted_time}"
-        )
-    else:
-        text = (
-            f"{tmpText.TMP_LIGHT_NOTIFICATION_OFF}\n\n"
-            f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_OFF}: {formatted_time}"
-        )
-
     subscribed_users = await get_subscribed_users()
+    logger.info(f"Sending notification for {len(subscribed_users)} users")
     if subscribed_users:
+        if status:
+            text = (
+                f"{tmpText.TMP_LIGHT_NOTIFICATION_ON}\n\n"
+                f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_ON}: {formatted_time}"
+            )
+        else:
+            text = (
+                f"{tmpText.TMP_LIGHT_NOTIFICATION_OFF}\n\n"
+                f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_OFF}: {formatted_time}"
+            )
+
         for user_tg_id in subscribed_users:
             await context.bot.send_message(
                 chat_id=user_tg_id,
