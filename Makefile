@@ -23,6 +23,9 @@ docker_restart:
 docker_logs:
 	docker-compose logs --tail=100 -f
 
+docker_logs_app:
+	docker-compose logs --tail=100 -f tg_app
+
 docker_prune:
 	docker image prune
 
