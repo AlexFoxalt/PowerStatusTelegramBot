@@ -505,7 +505,6 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
         PREV_LIGHT_VALUE = await get_last_light_value()
 
     status = ping(Cfg.ROUTER_IP)
-    logger.info(f"Status update iteration. Status = {status}")
     if PREV_LIGHT_VALUE == status:
         # If no changes were noticed, just pass
         return
@@ -517,6 +516,7 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
             await session.commit()
             return
 
+    logger.info(f"Status update {PREV_LIGHT_VALUE} -> {status}")
     async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
     async with async_session() as session:
         db_q = select(Light.time_created).order_by(Light.time_created.desc())
