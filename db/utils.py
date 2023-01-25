@@ -82,6 +82,7 @@ async def get_light_stat(start: datetime, stop: datetime) -> dict:
     }
 
 
+@AsyncTTL(time_to_live=60 * 60, maxsize=1)
 async def get_users_stat() -> dict:
     response = {}
     async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
