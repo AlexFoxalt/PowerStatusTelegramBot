@@ -24,7 +24,9 @@ if __name__ == "__main__":
             fallbacks=[CallbackQueryHandler(handler.callback_handler)],
             states={
                 handler.SUPPORT_MSG: [
-                    MessageHandler(filters.ALL, handler.register_support_message)
+                    MessageHandler(
+                        filters.ALL, handler.register_support_message
+                    )
                 ]
             },
         )

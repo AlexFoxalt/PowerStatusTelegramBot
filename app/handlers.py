@@ -43,14 +43,16 @@ async def migrate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=f"Successfully migrated to fresh DB",
+        text="Successfully migrated to fresh DB",
     )
     await DB.dispose()
 
 
 @admin_only
 async def msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
     target_id, message = re.findall(r"/msg (\d*) (.*)", update.message.text)[0]
     await context.bot.send_message(
         chat_id=target_id,
@@ -67,9 +69,13 @@ async def msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def msgpin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global PINNED_MSG
 
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
     updated_msg = re.findall(r"/msgpin (.*)", update.message.text)[0]
-    async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+    async_session = sessionmaker(
+        DB, expire_on_commit=False, class_=AsyncSession
+    )
     async with async_session() as session:
         session.add(PinnedMessage(text=updated_msg))
         await session.commit()
@@ -84,9 +90,13 @@ async def msgpin(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @admin_only
 async def msgall(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
     message = re.findall(r"/msgall (.*)", update.message.text)[0]
-    async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+    async_session = sessionmaker(
+        DB, expire_on_commit=False, class_=AsyncSession
+    )
     async with async_session() as session:
         db_q = select(User.tg_id)
         result = await session.execute(db_q)
@@ -95,7 +105,9 @@ async def msgall(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.send_message(
                 chat_id=user_id,
                 parse_mode=telegram.constants.ParseMode.HTML,
-                text=f"{tmpText.TMP_ADMIN_MSG_PREFIX}\n\n{message}\n\n{tmpText.TMP_NO_REPLY_ALL_POSTFIX}",
+                text=f"{tmpText.TMP_ADMIN_MSG_PREFIX}\n\n"
+                f"{message}\n\n"
+                f"{tmpText.TMP_NO_REPLY_ALL_POSTFIX}",
             )
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -107,9 +119,13 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global PINNED_MSG
 
     if PINNED_MSG is None:
-        async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+        async_session = sessionmaker(
+            DB, expire_on_commit=False, class_=AsyncSession
+        )
         async with async_session() as session:
-            db_q = select(PinnedMessage).order_by(PinnedMessage.time_created.desc())
+            db_q = select(PinnedMessage).order_by(
+                PinnedMessage.time_created.desc()
+            )
             result = await session.execute(db_q)
             pinned_msg = result.scalars().first()
             if pinned_msg:
@@ -118,14 +134,34 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 PINNED_MSG = Cfg.DEFAULT_PINNED_MSG
 
     keyboard = [
-        [InlineKeyboardButton(btnText.BTN_MENU_LIGHT, callback_data="light_info")],
-        [InlineKeyboardButton(btnText.BTN_MENU_STAT, callback_data="stat_info")],
-        [InlineKeyboardButton(btnText.BTN_MENU_SUB, callback_data="sub_info")],
-        [InlineKeyboardButton(btnText.BTN_USERS_INFO, callback_data="users_info")],
-        [InlineKeyboardButton(btnText.BTN_MENU_SUPPORT, callback_data="support_info")],
         [
-            InlineKeyboardButton(btnText.BTN_MENU_DTEK, callback_data="dtek_info"),
-            InlineKeyboardButton(btnText.BTN_MENU_INFO, callback_data="bot_info"),
+            InlineKeyboardButton(
+                btnText.BTN_MENU_LIGHT, callback_data="light_info"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                btnText.BTN_MENU_STAT, callback_data="stat_info"
+            )
+        ],
+        [InlineKeyboardButton(btnText.BTN_MENU_SUB, callback_data="sub_info")],
+        [
+            InlineKeyboardButton(
+                btnText.BTN_USERS_INFO, callback_data="users_info"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                btnText.BTN_MENU_SUPPORT, callback_data="support_info"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                btnText.BTN_MENU_DTEK, callback_data="dtek_info"
+            ),
+            InlineKeyboardButton(
+                btnText.BTN_MENU_INFO, callback_data="bot_info"
+            ),
         ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -145,8 +181,12 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
-    async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
+    async_session = sessionmaker(
+        DB, expire_on_commit=False, class_=AsyncSession
+    )
     async with async_session() as session:
         db_q = select(Light).order_by(Light.time_created.desc())
         result = await session.execute(db_q)
@@ -175,18 +215,28 @@ async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def sub_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
     user_status_mapping = {
         True: tmpText.TMP_USER_SUBED,
         False: tmpText.TMP_USER_UNSUBED,
     }
     button_status_mapping = {
-        False: [InlineKeyboardButton(btnText.BTN_SUB_ME, callback_data="sub_me")],
-        True: [InlineKeyboardButton(btnText.BTN_UNSUB_ME, callback_data="unsub_me")],
+        False: [
+            InlineKeyboardButton(btnText.BTN_SUB_ME, callback_data="sub_me")
+        ],
+        True: [
+            InlineKeyboardButton(
+                btnText.BTN_UNSUB_ME, callback_data="unsub_me"
+            )
+        ],
     }
     query = update.callback_query
 
-    async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+    async_session = sessionmaker(
+        DB, expire_on_commit=False, class_=AsyncSession
+    )
     async with async_session() as session:
         db_q = select(User).where(User.tg_id == query.from_user["id"])
         result = await session.execute(db_q)
@@ -204,9 +254,13 @@ async def sub_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def sub_me(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
     query = update.callback_query
-    async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+    async_session = sessionmaker(
+        DB, expire_on_commit=False, class_=AsyncSession
+    )
     async with async_session() as session:
         db_q = select(User).where(User.tg_id == query.from_user["id"])
         result = await session.execute(db_q)
@@ -221,9 +275,13 @@ async def sub_me(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def unsub_me(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
     query = update.callback_query
-    async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+    async_session = sessionmaker(
+        DB, expire_on_commit=False, class_=AsyncSession
+    )
     async with async_session() as session:
         db_q = select(User).where(User.tg_id == query.from_user["id"])
         result = await session.execute(db_q)
@@ -232,13 +290,16 @@ async def unsub_me(update: Update, context: ContextTypes.DEFAULT_TYPE):
             user.news_subscribed = False
             await session.commit()
             await context.bot.send_message(
-                chat_id=update.effective_chat.id, text=tmpText.TMP_UNSUB_SUCCESS
+                chat_id=update.effective_chat.id,
+                text=tmpText.TMP_UNSUB_SUCCESS,
             )
     return ConversationHandler.END
 
 
 async def users_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
     users_stat = await get_users_stat()
     total_users = sum(users_stat.values())
     percentage_text = []
@@ -247,7 +308,7 @@ async def users_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if home is None:
             percentage_text.append(
                 tmpText.TMP_USER_INFO_HOME_PERCENT.format(
-                    home=f"\n🥸 Анонимы", percent=percent
+                    home="\n🥸 Анонимы", percent=percent
                 )
             )
         else:
@@ -267,7 +328,9 @@ async def users_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def dtek_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
     await context.bot.send_photo(
         chat_id=update.effective_chat.id,
         photo=Cfg.get_dtek_media(),
@@ -277,8 +340,12 @@ async def dtek_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def support_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
-    keyboard = [[InlineKeyboardButton(f"🔙 Назад", callback_data="back_to_menu")]]
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
+    keyboard = [
+        [InlineKeyboardButton("🔙 Назад", callback_data="back_to_menu")]
+    ]
     await context.bot.send_message(
         reply_markup=InlineKeyboardMarkup(keyboard),
         chat_id=update.effective_chat.id,
@@ -289,7 +356,9 @@ async def support_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def bot_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         parse_mode=telegram.constants.ParseMode.HTML,
@@ -299,13 +368,17 @@ async def bot_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
     await menu(update, context)
     return ConversationHandler.END
 
 
 async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         parse_mode=telegram.constants.ParseMode.HTML,
@@ -366,7 +439,8 @@ async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         week_stat["light_on_mins"], two_weeks_stat["light_on_mins"]
     )
     compare_light_on_avg_time = get_percent_of_two(
-        week_stat["light_turn_on_avg_data"], two_weeks_stat["light_turn_on_avg_data"]
+        week_stat["light_turn_on_avg_data"],
+        two_weeks_stat["light_turn_on_avg_data"],
     )
 
     if compare_light_on_data < 0:
@@ -405,12 +479,18 @@ async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 
-async def register_support_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.message.from_user.username}({update.message.from_user.id})")
+async def register_support_message(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+):
+    logger.info(
+        f"{update.message.from_user.username}({update.message.from_user.id})"
+    )
     user = update.message.from_user.id
     text = update.message.text
 
-    async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+    async_session = sessionmaker(
+        DB, expire_on_commit=False, class_=AsyncSession
+    )
     async with async_session() as session:
         session.add(Message(message=text, user_id=user))
         await session.commit()
@@ -424,21 +504,29 @@ async def register_support_message(update: Update, context: ContextTypes.DEFAULT
     await context.bot.send_message(
         chat_id=Cfg.ADMIN_ID,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=f"🆘 <b>New message to support</b>\n" f"From: {user}\n" f"Msg: {text}",
+        text=f"🆘 <b>New message to support</b>\n"
+        f"From: {user}\n"
+        f"Msg: {text}",
     )
     return ConversationHandler.END
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.message.from_user.username}({update.message.from_user.id})")
+    logger.info(
+        f"{update.message.from_user.username}({update.message.from_user.id})"
+    )
     if await is_registered(update.message.from_user.id):
         return await menu(update, context)
     else:
         return await register_step_one(update, context)
 
 
-async def register_step_one(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.message.from_user.username}({update.message.from_user.id})")
+async def register_step_one(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+):
+    logger.info(
+        f"{update.message.from_user.username}({update.message.from_user.id})"
+    )
     reply_keyboard = [
         [
             btnText.BTN_SELECT_HOME_B,
@@ -460,8 +548,12 @@ async def register_step_one(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return SELECTED_HOME
 
 
-async def register_step_two(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.message.from_user.username}({update.message.from_user.id})")
+async def register_step_two(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+):
+    logger.info(
+        f"{update.message.from_user.username}({update.message.from_user.id})"
+    )
     if update.message.text == btnText.BTN_SKIP:
         return await register_end(update, context)
 
@@ -482,14 +574,18 @@ async def register_step_two(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def register_end(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"{update.message.from_user.username}({update.message.from_user.id})")
+    logger.info(
+        f"{update.message.from_user.username}({update.message.from_user.id})"
+    )
     if update.message.text == btnText.BTN_SKIP:
         flat = None
     else:
         flat = int(update.message.text)
     user = update.message.from_user
 
-    async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+    async_session = sessionmaker(
+        DB, expire_on_commit=False, class_=AsyncSession
+    )
     async with async_session() as session:
         session.add(
             User(

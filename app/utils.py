@@ -40,7 +40,8 @@ def get_hours_and_mins(mins) -> str:
 
 
 def get_date_and_month(time_data) -> str:
-    return f"{time_data.strftime('%-d')} {EN_TO_RU_MONTH[time_data.strftime('%B')]}"
+    return f"{time_data.strftime('%-d')} " \
+           f"{EN_TO_RU_MONTH[time_data.strftime('%B')]}"
 
 
 def get_percent_of_two(x: int, from_y: int) -> float:

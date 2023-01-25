@@ -16,7 +16,10 @@ DEFAULT_LOGGER_NAME = "tg-bot"
 
 def _setup_default_logger(context_logger: Logger) -> None:
     context_logger.add(
-        sink=sys.stdout, colorize=True, format=DEFAULT_MESSAGE_FORMAT, backtrace=True
+        sink=sys.stdout,
+        colorize=True,
+        format=DEFAULT_MESSAGE_FORMAT,
+        backtrace=True,
     )
 
 
