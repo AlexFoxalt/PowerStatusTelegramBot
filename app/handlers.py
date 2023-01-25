@@ -18,7 +18,6 @@ import config.buttons as btnText
 import config.templates as tmpText
 from app.decorators import admin_only
 from app.logger import get_logger
-from app.tasks import ping
 from app.utils import (
     format_time,
     convert_tz,
@@ -29,15 +28,9 @@ from app.utils import (
 from config.base import Config as Cfg
 from db.base import DB
 from db.models import User, Base, Light, Message, PinnedMessage
-from db.utils import (
-    is_registered,
-    get_subscribed_users,
-    get_last_light_value,
-    get_light_stat,
-)
+from db.utils import is_registered, get_light_stat, get_users_stat
 
 SELECTED_FLAT, SUPPORT_MSG, SELECTED_HOME, SELECTED_NONE = range(4)
-PREV_LIGHT_VALUE = None
 PINNED_MSG = None
 logger = get_logger(__name__)
 
@@ -128,6 +121,7 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton(btnText.BTN_MENU_LIGHT, callback_data="light_info")],
         [InlineKeyboardButton(btnText.BTN_MENU_STAT, callback_data="stat_info")],
         [InlineKeyboardButton(btnText.BTN_MENU_SUB, callback_data="sub_info")],
+        [InlineKeyboardButton(btnText.BTN_USERS_INFO, callback_data="users_info")],
         [InlineKeyboardButton(btnText.BTN_MENU_SUPPORT, callback_data="support_info")],
         [
             InlineKeyboardButton(btnText.BTN_MENU_DTEK, callback_data="dtek_info"),
@@ -240,6 +234,35 @@ async def unsub_me(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.send_message(
                 chat_id=update.effective_chat.id, text=tmpText.TMP_UNSUB_SUCCESS
             )
+    return ConversationHandler.END
+
+
+async def users_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"{update.effective_chat.username}({update.effective_chat.id})")
+    users_stat = await get_users_stat()
+    total_users = sum(users_stat.values())
+    percentage_text = []
+    for home, user_count in users_stat.items():
+        percent = round(user_count * 100 / total_users)
+        if home is None:
+            percentage_text.append(
+                tmpText.TMP_USER_INFO_HOME_PERCENT.format(
+                    home=f"\n🥸 Анонимы", percent=percent
+                )
+            )
+        else:
+            percentage_text.append(
+                tmpText.TMP_USER_INFO_HOME_PERCENT.format(
+                    home=f"🛖 Дом {home}", percent=percent
+                )
+            )
+
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        parse_mode=telegram.constants.ParseMode.HTML,
+        text=tmpText.TMP_USER_INFO.format(total_reg=total_users)
+        + "\n".join(sorted(percentage_text, reverse=True)),
+    )
     return ConversationHandler.END
 
 
@@ -496,58 +519,3 @@ async def register_end(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=telegram.constants.ParseMode.HTML,
     )
     return await start(update, context)
-
-
-async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
-    global PREV_LIGHT_VALUE
-
-    if PREV_LIGHT_VALUE is None:
-        PREV_LIGHT_VALUE = await get_last_light_value()
-
-    status = ping(Cfg.ROUTER_IP)
-    if PREV_LIGHT_VALUE == status:
-        # If no changes were noticed, just pass
-        return
-
-    if PREV_LIGHT_VALUE is None:
-        async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
-        async with async_session() as session:
-            session.add(Light(value=not status, mins_from_prev=0))
-            await session.commit()
-            return
-
-    logger.info(f"Status update {PREV_LIGHT_VALUE} -> {status}")
-    async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
-    async with async_session() as session:
-        db_q = select(Light.time_created).order_by(Light.time_created.desc())
-        result = await session.execute(db_q)
-        last_light_status = result.scalars().first()
-        mins_from_prev = (
-            datetime.utcnow() - last_light_status.replace(tzinfo=None)
-        ).seconds // 60
-        session.add(Light(value=status, mins_from_prev=mins_from_prev))
-        await session.commit()
-
-    PREV_LIGHT_VALUE = status
-
-    formatted_time = get_hours_and_mins(mins_from_prev)
-    subscribed_users = await get_subscribed_users()
-    logger.info(f"Sending notification for {len(subscribed_users)} users")
-    if subscribed_users:
-        if status:
-            text = (
-                f"{tmpText.TMP_LIGHT_NOTIFICATION_ON}\n\n"
-                f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_ON}: {formatted_time}"
-            )
-        else:
-            text = (
-                f"{tmpText.TMP_LIGHT_NOTIFICATION_OFF}\n\n"
-                f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_OFF}: {formatted_time}"
-            )
-
-        for user_tg_id in subscribed_users:
-            await context.bot.send_message(
-                chat_id=user_tg_id,
-                text=text + tmpText.TMP_NOTIFICATION_REASON,
-                parse_mode=telegram.constants.ParseMode.HTML,
-            )

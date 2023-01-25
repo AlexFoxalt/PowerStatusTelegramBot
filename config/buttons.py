@@ -1,6 +1,7 @@
 BTN_MENU_LIGHT = "⚡️ Электричество ⚡️"
 BTN_MENU_STAT = "📊 Статистика 📊"
 BTN_MENU_SUB = "📳 Уведомления 📳"
+BTN_USERS_INFO = "👤 Пользователи 👤"
 BTN_MENU_DTEK = "〽️ ДТЭК 〽️"
 BTN_MENU_SUPPORT = "💬 Обратная связь 💬"
 BTN_MENU_INFO = "ℹ️ О Боте ℹ️"

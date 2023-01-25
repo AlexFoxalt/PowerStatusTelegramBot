@@ -9,9 +9,11 @@ from telegram.ext import (
 
 import app.handlers as handler
 from app.logger import get_logger
+from app.tasks import run_status_update
 from config.base import Config as Cfg
 
 logger = get_logger(__name__)
+
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(Cfg.TG_TOKEN).build()
@@ -56,7 +58,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("msgpin", handler.msgpin))
     app.add_handler(CommandHandler("msgall", handler.msgall))
     job_status_update = job_queue.run_repeating(
-        handler.run_status_update, interval=60, first=60
+        run_status_update, interval=60, first=60
     )
     logger.info("Bot starting")
     app.run_polling()

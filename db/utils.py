@@ -5,6 +5,7 @@ from sqlalchemy import and_, func, cast, Date
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql.functions import count
 
 from app.logger import get_logger
 from db.base import DB
@@ -79,3 +80,14 @@ async def get_light_stat(start: datetime, stop: datetime) -> dict:
         if light_turn_on_avg_data is not None
         else 0,
     }
+
+
+async def get_users_stat() -> dict:
+    response = {}
+    async_session = sessionmaker(DB, expire_on_commit=False, class_=AsyncSession)
+    async with async_session() as session:
+        db_q = select(User.home, count(User.id)).group_by(User.home)
+        result = await session.execute(db_q)
+        for row in result:
+            response[row[0]] = row[1]
+        return response

@@ -3,6 +3,27 @@ from datetime import datetime
 import pytz
 
 
+import subprocess
+
+
+def ping(host: str, port: int = 8080) -> bool:
+    """
+    Ping server with telnet
+    :param host: Host name
+    :param port: Port num
+    :return: Returns True if host (str) responds to a ping request
+    """
+    command = f"echo -e \x1dclose\x0d | telnet {host} {port}"
+    try:
+        subprocess.check_output(
+            command, stderr=subprocess.DEVNULL, timeout=10, shell=True
+        )
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        return False
+    else:
+        return True
+
+
 def format_time(time_data) -> str:
     month = EN_TO_RU_MONTH[time_data.strftime("%B")]
     day = time_data.strftime("%-d")
