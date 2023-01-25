@@ -426,7 +426,6 @@ async def register_support_message(update: Update, context: ContextTypes.DEFAULT
         parse_mode=telegram.constants.ParseMode.HTML,
         text=f"🆘 <b>New message to support</b>\n" f"From: {user}\n" f"Msg: {text}",
     )
-    await menu(update, context)
     return ConversationHandler.END
 
 
