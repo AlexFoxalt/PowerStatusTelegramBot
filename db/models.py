@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, ForeignKey
+from sqlalchemy import Column, String, Boolean, ForeignKey, BigInteger
 from sqlalchemy import DateTime
 from sqlalchemy import Integer, SmallInteger
 from sqlalchemy import func
@@ -12,7 +12,7 @@ class User(Base):
     __mapper_args__ = {"eager_defaults": True}
 
     id = Column(Integer, primary_key=True)
-    tg_id = Column(Integer, unique=True)
+    tg_id = Column(BigInteger, unique=True)
     username = Column(String, nullable=True)
     home = Column(String, nullable=True)
     flat = Column(Integer, nullable=True)

@@ -488,6 +488,9 @@ async def register_support_message(
     user = update.message.from_user.id
     text = update.message.text
 
+    if text == "/start":
+        return await back_to_menu(update, context)
+
     async_session = sessionmaker(
         DB, expire_on_commit=False, class_=AsyncSession
     )
