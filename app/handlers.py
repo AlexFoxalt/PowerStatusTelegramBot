@@ -386,7 +386,7 @@ async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     now = datetime.utcnow().date()
-    week_ago = now - timedelta(days=7)
+    week_ago = now - timedelta(days=6)
     week_stat = await get_light_stat(week_ago, now)
     text = tmpText.TMP_STAT_INFO_LAST_WEEK.format(
         stat_date_week_ago=get_date_and_month(week_ago),
@@ -404,8 +404,8 @@ async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     now = now - timedelta(days=1)
-    week_ago = now - timedelta(days=7)
-    two_weeks_ago = now - timedelta(days=14)
+    week_ago = now - timedelta(days=6)
+    two_weeks_ago = now - timedelta(days=12)
     two_weeks_stat = await get_light_stat(two_weeks_ago, week_ago)
 
     if not all(two_weeks_stat.values()):
