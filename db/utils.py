@@ -86,7 +86,7 @@ async def get_light_stat(start: datetime, stop: datetime) -> dict:
         if light_turn_on_data is not None
         else 0,
         "light_off_mins": light_turn_off_data
-        if light_turn_on_data is not None
+        if light_turn_off_data is not None
         else 0,
         "light_turn_on_avg_data": light_turn_on_avg_data
         if light_turn_on_avg_data is not None
