@@ -333,6 +333,7 @@ async def dtek_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await context.bot.send_photo(
         chat_id=update.effective_chat.id,
+        parse_mode=telegram.constants.ParseMode.HTML,
         photo=Cfg.get_dtek_media(),
         caption=tmpText.TMP_DTEK_INFO,
     )
