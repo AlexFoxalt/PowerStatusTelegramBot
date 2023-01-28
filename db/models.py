@@ -17,6 +17,8 @@ class User(Base):
     home = Column(String, nullable=True)
     flat = Column(Integer, nullable=True)
     news_subscribed = Column(Boolean, default=False)
+    banned = Column(Boolean, default=False)
+    admin = Column(Boolean, default=False)
     time_created = Column(DateTime(timezone=True), server_default=func.now())
     time_updated = Column(DateTime(timezone=True), onupdate=func.now())
 
