@@ -444,20 +444,20 @@ async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     if compare_light_on_data < 0:
-        less_or_more = "меньше"
+        less_or_more = "меньше на "
         emoji = btnText.BTN_STAT_LESS
     elif compare_light_on_data > 0:
-        less_or_more = "больше"
+        less_or_more = "больше на +"
         emoji = btnText.BTN_STAT_MORE
     else:
         # Division zero
         return
 
     if compare_light_on_avg_time < 0:
-        less_or_more_avg = "меньше"
+        less_or_more_avg = "меньше на "
         emoji_avg = btnText.BTN_STAT_LESS
     elif compare_light_on_avg_time > 0:
-        less_or_more_avg = "больше"
+        less_or_more_avg = "больше на +"
         emoji_avg = btnText.BTN_STAT_MORE
     else:
         less_or_more_avg = "не менялось"
