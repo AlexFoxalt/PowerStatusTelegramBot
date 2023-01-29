@@ -53,7 +53,9 @@ async def msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(
         f"{update.effective_chat.username}({update.effective_chat.id})"
     )
-    target_id, message = re.findall(r"/msg (\d*) (.*)", update.message.text)[0]
+    target_id, message = re.findall(
+        r"/msg (\d*) (.*)", update.message.text, re.S
+    )[0]
     await context.bot.send_message(
         chat_id=target_id,
         parse_mode=telegram.constants.ParseMode.HTML,
@@ -74,7 +76,7 @@ async def msgpin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(
         f"{update.effective_chat.username}({update.effective_chat.id})"
     )
-    updated_msg = re.findall(r"/msgpin (.*)", update.message.text)[0]
+    updated_msg = re.findall(r"/msgpin (.*)", update.message.text, re.S)[0]
     async_session = sessionmaker(
         DB, expire_on_commit=False, class_=AsyncSession
     )
@@ -95,7 +97,7 @@ async def msgall(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(
         f"{update.effective_chat.username}({update.effective_chat.id})"
     )
-    message = re.findall(r"/msgall (.*)", update.message.text)[0]
+    message = re.findall(r"/msgall (.*)", update.message.text, re.S)[0]
     async_session = sessionmaker(
         DB, expire_on_commit=False, class_=AsyncSession
     )
