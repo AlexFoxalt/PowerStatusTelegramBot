@@ -1,5 +1,6 @@
 import sys
 from functools import lru_cache
+from zoneinfo import ZoneInfo
 
 import telegram
 from loguru import logger
@@ -7,7 +8,7 @@ from loguru._logger import Logger
 
 DEFAULT_MESSAGE_FORMAT = (
     "<green>[{extra[name]}]</green> | "
-    "{time:YYYY-MM-DD at HH:mm:ss} | "
+    "{extra[datetime]:YYYY-MM-DD at HH:mm:ss} | "
     "<yellow>{level}</yellow> | "
     "<m>{function}</m> | "
     "{message}"
@@ -23,6 +24,13 @@ def ignore_error(record):
     return True
 
 
+def set_datetime(record):
+    dt = record["time"]
+    eet = ZoneInfo("EET")
+    eettime = dt.astimezone(eet)
+    record["extra"]["datetime"] = eettime
+
+
 def _setup_default_logger(context_logger: Logger) -> None:
     context_logger.add(
         sink=sys.stdout,
@@ -31,6 +39,7 @@ def _setup_default_logger(context_logger: Logger) -> None:
         backtrace=True,
         filter=ignore_error,
     )
+    context_logger.configure(patcher=set_datetime)
 
 
 def _setup_logger(name: str) -> Logger:
