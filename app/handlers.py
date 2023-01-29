@@ -185,7 +185,6 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    assert 1 == 0
     logger.info(
         f"{update.effective_chat.username}({update.effective_chat.id})"
     )
