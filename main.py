@@ -16,7 +16,13 @@ logger = get_logger(__name__)
 
 
 if __name__ == "__main__":
-    app = ApplicationBuilder().token(Cfg.TG_TOKEN).build()
+    app = (
+        ApplicationBuilder()
+        .token(Cfg.TG_TOKEN)
+        .read_timeout(5)
+        .get_updates_read_timeout(5)
+        .build()
+    )
     job_queue = app.job_queue
     app.add_handler(
         ConversationHandler(
