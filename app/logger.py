@@ -17,7 +17,7 @@ DEFAULT_LOGGER_NAME = "tg-bot"
 
 def ignore_error(record):
     if record["exception"] is not None:
-        exc, _, _ = record["exception"]
+        _, exc, _ = record["exception"]
         if isinstance(exc, telegram.error.NetworkError):
             return False
     return True
@@ -29,7 +29,7 @@ def _setup_default_logger(context_logger: Logger) -> None:
         colorize=True,
         format=DEFAULT_MESSAGE_FORMAT,
         backtrace=True,
-        filter=ignore_error
+        filter=ignore_error,
     )
 
 

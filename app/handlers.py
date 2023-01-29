@@ -57,7 +57,9 @@ async def msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=target_id,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=message + tmpText.TMP_NO_REPLY_POSTFIX,
+        text=tmpText.TMP_RECEIVED_RESPONSE
+        + message
+        + tmpText.TMP_NO_REPLY_POSTFIX,
     )
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -181,6 +183,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    assert 1 == 0
     logger.info(
         f"{update.effective_chat.username}({update.effective_chat.id})"
     )
