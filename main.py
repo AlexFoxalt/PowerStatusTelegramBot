@@ -63,4 +63,4 @@ if __name__ == "__main__":
         run_status_update, interval=60, first=60
     )
     logger.info("Bot starting")
-    app.run_polling(timeout=20)
+    app.run_polling(timeout=30)
