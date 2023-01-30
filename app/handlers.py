@@ -305,6 +305,12 @@ async def users_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"{update.effective_chat.username}({update.effective_chat.id})"
     )
     users_stat = await get_users_stat()
+    users_stat = {
+        k: v
+        for k, v in sorted(
+            users_stat.items(), key=lambda item: item[1], reverse=True
+        )
+    }
     total_users = sum(users_stat.values())
     percentage_text = []
     for home, user_count in users_stat.items():
@@ -312,7 +318,7 @@ async def users_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if home is None:
             percentage_text.append(
                 tmpText.TMP_USER_INFO_HOME_PERCENT.format(
-                    home="\n🥸 Анонимы", percent=percent
+                    home="🥸 Анонимы", percent=percent
                 )
             )
         else:
@@ -326,7 +332,7 @@ async def users_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id=update.effective_chat.id,
         parse_mode=telegram.constants.ParseMode.HTML,
         text=tmpText.TMP_USER_INFO.format(total_reg=total_users)
-        + "\n".join(sorted(percentage_text, reverse=True)),
+        + "\n".join(percentage_text),
     )
     return ConversationHandler.END
 
