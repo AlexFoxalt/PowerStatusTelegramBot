@@ -16,13 +16,7 @@ logger = get_logger(__name__)
 
 
 if __name__ == "__main__":
-    app = (
-        ApplicationBuilder()
-        .token(Cfg.TG_TOKEN)
-        .read_timeout(Cfg.READ_TIMEOUT)
-        .get_updates_read_timeout(Cfg.GET_UPDATES_READ_TIMEOUT)
-        .build()
-    )
+    app = ApplicationBuilder().token(Cfg.TG_TOKEN).build()
     job_queue = app.job_queue
     app.add_handler(
         ConversationHandler(
@@ -69,4 +63,4 @@ if __name__ == "__main__":
         run_status_update, interval=60, first=60
     )
     logger.info("Bot starting")
-    app.run_polling()
+    app.run_polling(timeout=20)

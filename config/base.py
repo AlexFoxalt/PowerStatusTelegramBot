@@ -23,9 +23,6 @@ class Config:
     ADMIN_ID = int(os.getenv("ADMIN_ID"))
     TICKS_BETWEEN_PINGS = 60
 
-    READ_TIMEOUT = int(os.getenv("READ_TIMEOUT", 5))
-    GET_UPDATES_READ_TIMEOUT = int(os.getenv("GET_UPDATES_READ_TIMEOUT", 5))
-
     DTEK_SCHEDULE_NAME = "dtek_schedule.png"
     DEFAULT_PINNED_MSG = "Default message"
 
