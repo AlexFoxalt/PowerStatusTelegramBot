@@ -19,8 +19,8 @@ if __name__ == "__main__":
     app = (
         ApplicationBuilder()
         .token(Cfg.TG_TOKEN)
-        .read_timeout(5)
-        .get_updates_read_timeout(5)
+        .read_timeout(Cfg.READ_TIMEOUT)
+        .get_updates_read_timeout(Cfg.GET_UPDATES_READ_TIMEOUT)
         .build()
     )
     job_queue = app.job_queue

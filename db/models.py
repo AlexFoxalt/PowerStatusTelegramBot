@@ -29,7 +29,7 @@ class Message(Base):
     __tablename__ = "messages"
     __mapper_args__ = {"eager_defaults": True}
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.tg_id"))
+    user_id = Column(BigInteger, ForeignKey("users.tg_id"))
     message = Column(String)
     time_created = Column(DateTime(timezone=True), server_default=func.now())
 
