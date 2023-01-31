@@ -192,7 +192,7 @@ async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         DB, expire_on_commit=False, class_=AsyncSession
     )
     async with async_session() as session:
-        db_q = select(Light).order_by(Light.time_created.desc())
+        db_q = select(Light).order_by(Light.time_created.desc()).limit(1)
         result = await session.execute(db_q)
         light = result.scalars().first()
 
