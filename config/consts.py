@@ -1,6 +1,6 @@
 EN_TO_RU_MONTH = {
     "January": "Января",
-    "February": "Декабря",
+    "February": "Февраля",
     "March": "Марта",
     "April": "Апреля",
     "May": "Мая",
