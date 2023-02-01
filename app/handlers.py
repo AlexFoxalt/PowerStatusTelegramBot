@@ -28,7 +28,12 @@ from app.utils import (
 from config.base import Config as Cfg
 from db.base import DB
 from db.models import User, Base, Light, Message, PinnedMessage
-from db.utils import is_registered, get_light_stat, get_users_stat
+from db.utils import (
+    is_registered,
+    get_light_stat,
+    get_users_stat,
+    get_subscribed_users,
+)
 
 SELECTED_FLAT, SUPPORT_MSG, SELECTED_HOME, SELECTED_NONE = range(4)
 PINNED_MSG = None
@@ -70,6 +75,31 @@ async def msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @admin_only
+async def msgsub(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(
+        f"{update.effective_chat.username}({update.effective_chat.id})"
+    )
+    message = re.findall(r"/msgsub (.*)", update.message.text, re.S)[0]
+    subscribed_users = await get_subscribed_users()
+    if subscribed_users:
+        for user_tg_id in subscribed_users:
+            try:
+                await context.bot.send_message(
+                    chat_id=user_tg_id,
+                    text=f"{tmpText.TMP_ADMIN_MSG_PREFIX}\n\n"
+                    f"{message}\n\n"
+                    f"{tmpText.TMP_NO_REPLY_SUB_POSTFIX}",
+                    parse_mode=telegram.constants.ParseMode.HTML,
+                )
+            except telegram.error.Forbidden as exc:
+                logger.warning(f"Exception: {str(exc)} | {user_tg_id}")
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=f"Successfully sent messages to {len(subscribed_users)} users",
+    )
+
+
+@admin_only
 async def msgpin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global PINNED_MSG
 
@@ -105,14 +135,17 @@ async def msgall(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db_q = select(User.tg_id)
         result = await session.execute(db_q)
         users = result.scalars().all()
-        for user_id in users:
-            await context.bot.send_message(
-                chat_id=user_id,
-                parse_mode=telegram.constants.ParseMode.HTML,
-                text=f"{tmpText.TMP_ADMIN_MSG_PREFIX}\n\n"
-                f"{message}\n\n"
-                f"{tmpText.TMP_NO_REPLY_ALL_POSTFIX}",
-            )
+        for user_tg_id in users:
+            try:
+                await context.bot.send_message(
+                    chat_id=user_tg_id,
+                    parse_mode=telegram.constants.ParseMode.HTML,
+                    text=f"{tmpText.TMP_ADMIN_MSG_PREFIX}\n\n"
+                    f"{message}\n\n"
+                    f"{tmpText.TMP_NO_REPLY_ALL_POSTFIX}",
+                )
+            except telegram.error.Forbidden as exc:
+                logger.warning(f"Exception: {str(exc)} | {user_tg_id}")
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=f"Successfully sent messages to {len(users)} users",

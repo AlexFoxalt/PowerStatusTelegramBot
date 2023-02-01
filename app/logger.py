@@ -9,7 +9,7 @@ from loguru._logger import Logger
 DEFAULT_MESSAGE_FORMAT = (
     "<yellow>{level}</yellow> | "
     "{extra[datetime]:YYYY-MM-DD at HH:mm:ss} | "
-    "<green>{function}</green> | "
+    "<m><b>{function}</b></m> | "
     "{message}"
 )
 DEFAULT_LOGGER_NAME = "tg-bot"
