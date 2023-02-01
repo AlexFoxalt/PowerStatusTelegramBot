@@ -8,7 +8,7 @@ from loguru._logger import Logger
 
 DEFAULT_MESSAGE_FORMAT = (
     "<yellow>{level}</yellow> | "
-    "{extra[datetime]:YYYY-MM-DD at HH:mm:ss} | "
+    "<g><i>{extra[datetime]:YYYY-MM-DD at HH:mm:ss}</i></g> | "
     "<m><b>{function}</b></m> | "
     "{message}"
 )

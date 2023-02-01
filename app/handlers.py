@@ -32,7 +32,7 @@ from db.utils import (
     is_registered,
     get_light_stat,
     get_users_stat,
-    get_subscribed_users,
+    get_subscribed_users, get_all_users,
 )
 
 SELECTED_FLAT, SUPPORT_MSG, SELECTED_HOME, SELECTED_NONE = range(4)
@@ -75,17 +75,25 @@ async def msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @admin_only
-async def msgsub(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def msgsub(
+    update: Update, context: ContextTypes.DEFAULT_TYPE, no_sound: bool = False
+):
     logger.info(
         f"{update.effective_chat.username}({update.effective_chat.id})"
     )
     message = re.findall(r"/msgsub (.*)", update.message.text, re.S)[0]
+
+    if message.startswith("--silent"):
+        no_sound = True
+        message = message.replace("--silent ", "")
+
     subscribed_users = await get_subscribed_users()
     if subscribed_users:
         for user_tg_id in subscribed_users:
             try:
                 await context.bot.send_message(
                     chat_id=user_tg_id,
+                    disable_notification=no_sound,
                     text=f"{tmpText.TMP_ADMIN_MSG_PREFIX}\n\n"
                     f"{message}\n\n"
                     f"{tmpText.TMP_NO_REPLY_SUB_POSTFIX}",
@@ -123,29 +131,32 @@ async def msgpin(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @admin_only
-async def msgall(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def msgall(
+    update: Update, context: ContextTypes.DEFAULT_TYPE, no_sound: bool = False
+):
     logger.info(
         f"{update.effective_chat.username}({update.effective_chat.id})"
     )
     message = re.findall(r"/msgall (.*)", update.message.text, re.S)[0]
-    async_session = sessionmaker(
-        DB, expire_on_commit=False, class_=AsyncSession
-    )
-    async with async_session() as session:
-        db_q = select(User.tg_id)
-        result = await session.execute(db_q)
-        users = result.scalars().all()
-        for user_tg_id in users:
-            try:
-                await context.bot.send_message(
-                    chat_id=user_tg_id,
-                    parse_mode=telegram.constants.ParseMode.HTML,
-                    text=f"{tmpText.TMP_ADMIN_MSG_PREFIX}\n\n"
-                    f"{message}\n\n"
-                    f"{tmpText.TMP_NO_REPLY_ALL_POSTFIX}",
-                )
-            except telegram.error.Forbidden as exc:
-                logger.warning(f"Exception: {str(exc)} | {user_tg_id}")
+
+    if message.startswith("--silent"):
+        no_sound = True
+        message = message.replace("--silent ", "")
+
+    users = await get_all_users()
+    for user_tg_id in users:
+        try:
+            await context.bot.send_message(
+                chat_id=user_tg_id,
+                parse_mode=telegram.constants.ParseMode.HTML,
+                disable_notification=no_sound,
+                text=f"{tmpText.TMP_ADMIN_MSG_PREFIX}\n\n"
+                f"{message}\n\n"
+                f"{tmpText.TMP_NO_REPLY_ALL_POSTFIX}",
+            )
+        except telegram.error.Forbidden as exc:
+            logger.warning(f"Exception: {str(exc)} | {user_tg_id}")
+
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=f"Successfully sent messages to {len(users)} users",

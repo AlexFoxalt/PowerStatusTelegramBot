@@ -72,8 +72,11 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
             )
 
         for user_tg_id in subscribed_users:
-            await context.bot.send_message(
-                chat_id=user_tg_id,
-                text=text + tmpText.TMP_NOTIFICATION_REASON,
-                parse_mode=telegram.constants.ParseMode.HTML,
-            )
+            try:
+                await context.bot.send_message(
+                    chat_id=user_tg_id,
+                    text=text + tmpText.TMP_NOTIFICATION_REASON,
+                    parse_mode=telegram.constants.ParseMode.HTML,
+                )
+            except telegram.error.Forbidden as exc:
+                logger.warning(f"Exception: {str(exc)} | {user_tg_id}")

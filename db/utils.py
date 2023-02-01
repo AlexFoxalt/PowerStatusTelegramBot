@@ -35,6 +35,17 @@ async def get_subscribed_users() -> list:
         return result.scalars().all()
 
 
+async def get_all_users() -> list:
+    async_session = sessionmaker(
+        DB, expire_on_commit=False, class_=AsyncSession
+    )
+    async with async_session() as session:
+        db_q = select(User.tg_id)
+        result = await session.execute(db_q)
+        users = result.scalars().all()
+    return users
+
+
 async def get_last_light_value() -> bool:
     async_session = sessionmaker(
         DB, expire_on_commit=False, class_=AsyncSession
