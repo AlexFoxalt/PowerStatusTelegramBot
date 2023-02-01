@@ -59,8 +59,8 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("msg", handler.msg))
     app.add_handler(CommandHandler("msgpin", handler.msgpin))
     app.add_handler(CommandHandler("msgall", handler.msgall))
-    # job_status_update = job_queue.run_repeating(
-    #     run_status_update, interval=60, first=60
-    # )
+    job_status_update = job_queue.run_repeating(
+        run_status_update, interval=60, first=60
+    )
     logger.info("Bot starting")
     app.run_polling(timeout=30)
