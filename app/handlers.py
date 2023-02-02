@@ -84,9 +84,9 @@ async def msgsub(
     )
     message = re.findall(r"/msgsub (.*)", update.message.text, re.S)[0]
 
-    if message.startswith("--silent"):
+    if message.startswith("-silent "):
         no_sound = True
-        message = message.replace("--silent ", "")
+        message = message.replace("-silent ", "")
 
     subscribed_users = await get_subscribed_users()
     if subscribed_users:
@@ -104,7 +104,7 @@ async def msgsub(
                 logger.warning(f"Exception: {str(exc)} | {user_tg_id}")
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=f"Successfully sent messages to {len(subscribed_users)} users",
+        text=f"Successfully sent messages to {len(subscribed_users)} users\nNo sound: {no_sound}",
     )
 
 
@@ -140,9 +140,9 @@ async def msgall(
     )
     message = re.findall(r"/msgall (.*)", update.message.text, re.S)[0]
 
-    if message.startswith("--silent"):
+    if message.startswith("-silent "):
         no_sound = True
-        message = message.replace("--silent ", "")
+        message = message.replace("-silent ", "")
 
     users = await get_all_users()
     for user_tg_id in users:
@@ -160,7 +160,7 @@ async def msgall(
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=f"Successfully sent messages to {len(users)} users",
+        text=f"Successfully sent messages to {len(users)} users\nNo sound: {no_sound}",
     )
 
 
