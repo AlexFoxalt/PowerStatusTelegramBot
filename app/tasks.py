@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 
 import telegram
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,7 +9,7 @@ from telegram.ext import ContextTypes
 import config.templates as tmpText
 from app.logger import get_logger
 
-from app.utils import get_hours_and_mins, ping
+from app.utils import get_hours_and_mins, ping, is_time_between
 from config.base import Config as Cfg
 from db.base import DB
 from db.models import Light
@@ -56,9 +56,15 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
 
     PREV_LIGHT_VALUE = status
 
+    disable_sound = is_time_between(
+        time(Cfg.DISABLE_SOUND_START_TIME), time(Cfg.DISABLE_SOUND_START_END)
+    )
     formatted_time = get_hours_and_mins(mins_from_prev)
     subscribed_users = await get_subscribed_users()
-    logger.info(f"Sending notification for {len(subscribed_users)} users")
+    logger.info(
+        f"Sending notification for {len(subscribed_users)} users | "
+        f"No sound: {disable_sound}"
+    )
     if subscribed_users:
         if status:
             text = (
@@ -77,6 +83,7 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
                     chat_id=user_tg_id,
                     text=text + tmpText.TMP_NOTIFICATION_REASON,
                     parse_mode=telegram.constants.ParseMode.HTML,
+                    disable_notification=disable_sound,
                 )
             except telegram.error.Forbidden as exc:
                 logger.warning(f"Exception: {str(exc)} | {user_tg_id}")

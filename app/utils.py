@@ -2,7 +2,6 @@ from config.consts import EN_TO_RU_MONTH
 from datetime import datetime
 import pytz
 
-
 import subprocess
 
 
@@ -48,3 +47,15 @@ def get_date_and_month(time_data) -> str:
 
 def get_percent_of_two(x: int, from_y: int) -> float:
     return round((x - from_y) / from_y * 100)
+
+
+def is_time_between(
+    begin_time: datetime.time,
+    end_time: datetime.time,
+    check_time: datetime.time = None,
+) -> bool:
+    check_time = check_time or datetime.utcnow().time()
+    if begin_time < end_time:
+        return begin_time <= check_time <= end_time
+    else:
+        return check_time >= begin_time or check_time <= end_time

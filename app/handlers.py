@@ -32,7 +32,8 @@ from db.utils import (
     is_registered,
     get_light_stat,
     get_users_stat,
-    get_subscribed_users, get_all_users,
+    get_subscribed_users,
+    get_all_users,
 )
 
 SELECTED_FLAT, SUPPORT_MSG, SELECTED_HOME, SELECTED_NONE = range(4)
