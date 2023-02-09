@@ -57,7 +57,7 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
     PREV_LIGHT_VALUE = status
 
     disable_sound = is_time_between(
-        time(Cfg.DISABLE_SOUND_START_TIME), time(Cfg.DISABLE_SOUND_START_END)
+        time(Cfg.DISABLE_SOUND_START_TIME), time(Cfg.DISABLE_SOUND_END_TIME)
     )
     formatted_time = get_hours_and_mins(mins_from_prev)
     subscribed_users = await get_subscribed_users()

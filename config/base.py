@@ -26,8 +26,9 @@ class Config:
     DTEK_SCHEDULE_NAME = "dtek_schedule.png"
     DEFAULT_PINNED_MSG = "Default message"
 
+    # UTC Time
     DISABLE_SOUND_START_TIME = 22
-    DISABLE_SOUND_START_END = 6
+    DISABLE_SOUND_END_TIME = 6
 
     @classmethod
     def get_dtek_media(self):

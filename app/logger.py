@@ -25,8 +25,7 @@ def ignore_error(record):
 
 def set_datetime(record):
     dt = record["time"]
-    eet = ZoneInfo("EET")
-    eettime = dt.astimezone(eet)
+    eettime = dt.astimezone(ZoneInfo("EET"))
     record["extra"]["datetime"] = eettime
 
 
