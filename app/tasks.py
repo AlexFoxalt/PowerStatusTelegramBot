@@ -50,8 +50,8 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
         last_light_status = result.scalars().first()
         mins_from_prev = (
             datetime.utcnow() - last_light_status.replace(tzinfo=None)
-        ).seconds // 60
-        session.add(Light(value=status, mins_from_prev=mins_from_prev))
+        ).total_seconds() // 60
+        session.add(Light(value=status, mins_from_prev=int(mins_from_prev)))
         await session.commit()
 
     PREV_LIGHT_VALUE = status
@@ -59,7 +59,7 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
     disable_sound = is_time_between(
         time(Cfg.DISABLE_SOUND_START_TIME), time(Cfg.DISABLE_SOUND_END_TIME)
     )
-    formatted_time = get_hours_and_mins(mins_from_prev)
+    formatted_time = get_hours_and_mins(int(mins_from_prev))
     subscribed_users = await get_subscribed_users()
     logger.info(
         f"Sending notification for {len(subscribed_users)} users | "

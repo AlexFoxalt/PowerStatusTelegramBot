@@ -104,7 +104,8 @@ async def msgsub(
                 logger.warning(f"Exception: {str(exc)} | {user_tg_id}")
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=f"Successfully sent messages to {len(subscribed_users)} users\nNo sound: {no_sound}",
+        text=f"Successfully sent messages to {len(subscribed_users)} "
+        f"users\nNo sound: {no_sound}",
     )
 
 
@@ -160,7 +161,8 @@ async def msgall(
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=f"Successfully sent messages to {len(users)} users\nNo sound: {no_sound}",
+        text=f"Successfully sent messages to {len(users)} "
+        f"users\nNo sound: {no_sound}",
     )
 
 
@@ -243,8 +245,8 @@ async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     time_passed = (
         datetime.utcnow() - light.time_created.replace(tzinfo=None)
-    ).seconds // 60
-    time_passed = get_hours_and_mins(time_passed)
+    ).total_seconds() // 60
+    time_passed = get_hours_and_mins(int(time_passed))
     light.time_created = convert_tz(light.time_created)
 
     if light.value:
