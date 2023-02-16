@@ -15,7 +15,7 @@ from telegram import (
 from telegram.ext import ContextTypes, ConversationHandler
 
 import config.buttons as btnText
-import config.templates as tmpText
+from config.templates import TEMPLATE
 from app.decorators import admin_only
 from app.logger import get_logger
 from app.utils import (
@@ -65,9 +65,9 @@ async def msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=target_id,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=tmpText.TMP_RECEIVED_RESPONSE
+        text=TEMPLATE.TMP_RECEIVED_RESPONSE
         + message
-        + tmpText.TMP_NO_REPLY_POSTFIX,
+        + TEMPLATE.TMP_NO_REPLY_POSTFIX,
     )
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -95,9 +95,9 @@ async def msgsub(
                 await context.bot.send_message(
                     chat_id=user_tg_id,
                     disable_notification=no_sound,
-                    text=f"{tmpText.TMP_ADMIN_MSG_PREFIX}\n\n"
+                    text=f"{TEMPLATE.TMP_ADMIN_MSG_PREFIX}\n\n"
                     f"{message}\n\n"
-                    f"{tmpText.TMP_NO_REPLY_SUB_POSTFIX}",
+                    f"{TEMPLATE.TMP_NO_REPLY_SUB_POSTFIX}",
                     parse_mode=telegram.constants.ParseMode.HTML,
                 )
             except telegram.error.Forbidden as exc:
@@ -152,9 +152,9 @@ async def msgall(
                 chat_id=user_tg_id,
                 parse_mode=telegram.constants.ParseMode.HTML,
                 disable_notification=no_sound,
-                text=f"{tmpText.TMP_ADMIN_MSG_PREFIX}\n\n"
+                text=f"{TEMPLATE.TMP_ADMIN_MSG_PREFIX}\n\n"
                 f"{message}\n\n"
-                f"{tmpText.TMP_NO_REPLY_ALL_POSTFIX}",
+                f"{TEMPLATE.TMP_NO_REPLY_ALL_POSTFIX}",
             )
         except telegram.error.Forbidden as exc:
             logger.warning(f"Exception: {str(exc)} | {user_tg_id}")
@@ -218,7 +218,7 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(keyboard)
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=f"{tmpText.TMP_MENU}\n\n📌 <i>{PINNED_MSG}</i>",
+        text=f"{TEMPLATE.TMP_MENU}\n\n📌 <i>{PINNED_MSG}</i>",
         reply_markup=reply_markup,
         parse_mode=telegram.constants.ParseMode.HTML,
     )
@@ -250,9 +250,9 @@ async def light_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     light.time_created = convert_tz(light.time_created)
 
     if light.value:
-        text = tmpText.TMP_LIGHT_ON
+        text = TEMPLATE.TMP_LIGHT_ON
     else:
-        text = tmpText.TMP_LIGHT_OFF
+        text = TEMPLATE.TMP_LIGHT_OFF
 
     text = text.format(
         time_of_event=format_time(light.time_created), time_passed=time_passed
@@ -270,8 +270,8 @@ async def sub_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"{update.effective_chat.username}({update.effective_chat.id})"
     )
     user_status_mapping = {
-        True: tmpText.TMP_USER_SUBED,
-        False: tmpText.TMP_USER_UNSUBED,
+        True: TEMPLATE.TMP_USER_SUBED,
+        False: TEMPLATE.TMP_USER_UNSUBED,
     }
     button_status_mapping = {
         False: [
@@ -320,7 +320,7 @@ async def sub_me(update: Update, context: ContextTypes.DEFAULT_TYPE):
             user.news_subscribed = True
             await session.commit()
             await context.bot.send_message(
-                chat_id=update.effective_chat.id, text=tmpText.TMP_SUB_SUCCESS
+                chat_id=update.effective_chat.id, text=TEMPLATE.TMP_SUB_SUCCESS
             )
     return ConversationHandler.END
 
@@ -342,7 +342,7 @@ async def unsub_me(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await session.commit()
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text=tmpText.TMP_UNSUB_SUCCESS,
+                text=TEMPLATE.TMP_UNSUB_SUCCESS,
             )
     return ConversationHandler.END
 
@@ -364,13 +364,13 @@ async def users_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         percent = round(user_count * 100 / total_users)
         if home is None:
             percentage_text.append(
-                tmpText.TMP_USER_INFO_HOME_PERCENT.format(
+                TEMPLATE.TMP_USER_INFO_HOME_PERCENT.format(
                     home="🥸 Анонимы", percent=percent
                 )
             )
         else:
             percentage_text.append(
-                tmpText.TMP_USER_INFO_HOME_PERCENT.format(
+                TEMPLATE.TMP_USER_INFO_HOME_PERCENT.format(
                     home=f"🛖 Дом {home}", percent=percent
                 )
             )
@@ -378,7 +378,7 @@ async def users_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=tmpText.TMP_USER_INFO.format(total_reg=total_users)
+        text=TEMPLATE.TMP_USER_INFO.format(total_reg=total_users)
         + "\n".join(percentage_text),
     )
     return ConversationHandler.END
@@ -392,7 +392,7 @@ async def dtek_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id=update.effective_chat.id,
         parse_mode=telegram.constants.ParseMode.HTML,
         photo=Cfg.get_dtek_media(),
-        caption=tmpText.TMP_DTEK_INFO,
+        caption=TEMPLATE.TMP_DTEK_INFO,
     )
     return ConversationHandler.END
 
@@ -408,7 +408,7 @@ async def support_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup(keyboard),
         chat_id=update.effective_chat.id,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=tmpText.TMP_SUPPORT_INFO,
+        text=TEMPLATE.TMP_SUPPORT_INFO,
     )
     return SUPPORT_MSG
 
@@ -420,7 +420,7 @@ async def bot_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=tmpText.TMP_BOT_INFO,
+        text=TEMPLATE.TMP_BOT_INFO,
     )
     return ConversationHandler.END
 
@@ -440,13 +440,13 @@ async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=tmpText.TMP_STAT_INFO_MAIN,
+        text=TEMPLATE.TMP_STAT_INFO_MAIN,
     )
 
     now = datetime.utcnow().date()
     week_ago = now - timedelta(days=6)
     week_stat = await get_light_stat(week_ago, now)
-    text = tmpText.TMP_STAT_INFO_LAST_WEEK.format(
+    text = TEMPLATE.TMP_STAT_INFO_LAST_WEEK.format(
         stat_date_week_ago=get_date_and_month(week_ago),
         stat_date_now=get_date_and_month(now),
         light_off_time=get_hours_and_mins(week_stat["light_off_mins"]),
@@ -471,14 +471,14 @@ async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             parse_mode=telegram.constants.ParseMode.HTML,
-            text=tmpText.TMP_STAT_INFO_NO_DATA.format(
+            text=TEMPLATE.TMP_STAT_INFO_NO_DATA.format(
                 stat_date_week_ago=get_date_and_month(two_weeks_ago),
                 stat_date_now=get_date_and_month(week_ago),
             ),
         )
         return ConversationHandler.END
 
-    text = tmpText.TMP_STAT_INFO_LAST_TWO_WEEKS.format(
+    text = TEMPLATE.TMP_STAT_INFO_LAST_TWO_WEEKS.format(
         stat_date_week_ago=get_date_and_month(two_weeks_ago),
         stat_date_now=get_date_and_month(week_ago),
         light_off_time=get_hours_and_mins(two_weeks_stat["light_off_mins"]),
@@ -521,7 +521,7 @@ async def stat_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         less_or_more_avg = "не менялось"
         emoji_avg = btnText.BTN_STAT_EQUAL
 
-    text = tmpText.TMP_STAT_INFO_COMPARE.format(
+    text = TEMPLATE.TMP_STAT_INFO_COMPARE.format(
         light_on_time=compare_light_on_data,
         emoji=emoji,
         less_or_more=less_or_more,
@@ -559,7 +559,7 @@ async def register_support_message(
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         parse_mode=telegram.constants.ParseMode.HTML,
-        text=tmpText.TMP_SUPPORT_MSG_CREATED,
+        text=TEMPLATE.TMP_SUPPORT_MSG_CREATED,
     )
 
     await context.bot.send_message(
@@ -597,7 +597,7 @@ async def register_step_one(
         [btnText.BTN_SKIP],
     ]
     await update.message.reply_text(
-        tmpText.TMP_REGISTER_STEP_ONE,
+        TEMPLATE.TMP_REGISTER_STEP_ONE,
         parse_mode=telegram.constants.ParseMode.HTML,
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
@@ -622,7 +622,7 @@ async def register_step_two(
     reply_keyboard = [[btnText.BTN_SKIP]]
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=tmpText.TMP_REGISTER_FLAT_NUM,
+        text=TEMPLATE.TMP_REGISTER_FLAT_NUM,
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
             resize_keyboard=True,
@@ -661,7 +661,7 @@ async def register_end(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=tmpText.TMP_REGISTER_SUCCESS,
+        text=TEMPLATE.TMP_REGISTER_SUCCESS,
         reply_markup=ReplyKeyboardRemove(),
     )
     await context.bot.send_message(

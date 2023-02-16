@@ -6,7 +6,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import sessionmaker
 from telegram.ext import ContextTypes
 
-import config.templates as tmpText
+from config.templates import TEMPLATE
 from app.logger import get_logger
 
 from app.utils import get_hours_and_mins, ping, is_time_between
@@ -32,6 +32,8 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
         return
 
     if PREV_LIGHT_VALUE is None:
+        # Previous light value can be still None, if there is no data in db
+        # In this case just create plug item
         async_session = sessionmaker(
             DB, expire_on_commit=False, class_=AsyncSession
         )
@@ -68,20 +70,20 @@ async def run_status_update(context: ContextTypes.DEFAULT_TYPE):
     if subscribed_users:
         if status:
             text = (
-                f"{tmpText.TMP_LIGHT_NOTIFICATION_ON}\n\n"
-                f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_ON}: {formatted_time}"
+                f"{TEMPLATE.TMP_LIGHT_NOTIFICATION_ON}\n\n"
+                f"{TEMPLATE.TMP_LIGHT_TIME_NOTIFICATION_ON}: {formatted_time}"
             )
         else:
             text = (
-                f"{tmpText.TMP_LIGHT_NOTIFICATION_OFF}\n\n"
-                f"{tmpText.TMP_LIGHT_TIME_NOTIFICATION_OFF}: {formatted_time}"
+                f"{TEMPLATE.TMP_LIGHT_NOTIFICATION_OFF}\n\n"
+                f"{TEMPLATE.TMP_LIGHT_TIME_NOTIFICATION_OFF}: {formatted_time}"
             )
 
         for user_tg_id in subscribed_users:
             try:
                 await context.bot.send_message(
                     chat_id=user_tg_id,
-                    text=text + tmpText.TMP_NOTIFICATION_REASON,
+                    text=text + TEMPLATE.TMP_NOTIFICATION_REASON,
                     parse_mode=telegram.constants.ParseMode.HTML,
                     disable_notification=disable_sound,
                 )
